@@ -1,0 +1,28 @@
+{
+  "env": {
+    "browser": true,
+    "commonjs": true,
+    "es6": true,
+    "jasmine": true,
+    "node": true
+  },
+  "extends": [
+    "eslint:recommended"
+  ],
+  "globals": {
+    "expectAsync": "readonly"
+  },
+  "parserOptions": {
+    "ecmaVersion": 2018,
+    "sourceType": "module"
+  },
+  "rules": {
+    "indent": ["warn", 2, {
+      "SwitchCase": 1
+    }],
+    "no-console": "off",
+    "no-unused-vars": "warn",
+    "quotes": ["warn", "single", "avoid-escape"],
+    "semi": ["warn", "always"]
+  }
+}

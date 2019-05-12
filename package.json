@@ -1,0 +1,26 @@
+{
+  "name": "await-resource",
+  "version": "0.1.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "lint": "eslint 'src/**/*.js'",
+    "test": "npm run lint"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cztamas/await-resource.git"
+  },
+  "author": "cztamas",
+  "license": "ISC",
+  "homepage": "https://github.com/cztamas/await-resource#readme",
+  "dependencies": {
+    "@emartech/delay-js": "1.0.0",
+    "axios": "0.18.0",
+    "docker-cli-js": "2.5.2",
+    "yargs": "13.2.2"
+  },
+  "devDependencies": {
+    "eslint": "5.16.0"
+  }
+}
