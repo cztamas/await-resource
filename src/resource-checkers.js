@@ -5,6 +5,7 @@ const { Docker, Options } = require('docker-cli-js');
 
 const dockerOptions = new Options();
 const docker = new Docker(dockerOptions);
+const mysqlPassword = 'password';
 
 const getContainerId = async name => {
   const { containerList } = await docker.command('ps');
@@ -19,6 +20,18 @@ const isPostgresReady = async name => {
     const result = await docker.command(`exec ${containerId} pg_isready`);
     const isReady = result.raw.split('-')[1].trim() === 'accepting connections';
     return isReady;
+  } catch (error) {
+    return false;
+  }
+};
+
+const isMysqlReady = async name => {
+  try {
+    const containerId = await getContainerId(name);
+    const result = await docker.command(`exec ${containerId} mysqladmin status --password=${mysqlPassword}`);
+    const uptimeData = result.raw.split('  ')[0].split(' ');
+    const uptime = parseInt(uptimeData[1]);
+    return uptimeData[0] === 'Uptime:' && uptime > 0;
   } catch (error) {
     return false;
   }
@@ -79,6 +92,7 @@ module.exports = {
   rabbit: isRabbitReady,
   redis: isRedisReady,
   mongo: isMongoReady,
+  mysql: isMysqlReady,
   url: checkUrl,
   healthcheck: checkHealthcheckRoute
 };

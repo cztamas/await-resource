@@ -9,6 +9,7 @@ const defaultCheckInterval = 500;
 
 const args = yargs
   .array('pg')
+  .array('mysql')
   .array('rabbit')
   .array('redis')
   .array('mongo')
@@ -21,7 +22,7 @@ const args = yargs
 const timeout = args.timeout || defaultTimeout;
 const checkInterval = args.interval || defaultCheckInterval;
 
-const waitForResource = async (resourceType, resourceName) => {
+async function awaitResource(resourceType, resourceName) {
   const checkResource = resourceCheckers[resourceType];
 
   if (!resourceName) {
@@ -41,19 +42,22 @@ const waitForResource = async (resourceType, resourceName) => {
   }
   clearTimeout(timeoutHandle);
   console.log(`${resourceName} is up`);
-};
+}
 
-const waitForResources = resourceType => {
+async function awaitResourceType(resourceType) {
   const resourceNames = args[resourceType];
   if (!resourceNames) {
     return;
   }
-  resourceNames.map(resourceName => waitForResource(resourceType, resourceName));
-};
 
-waitForResources('pg');
-waitForResources('rabbit');
-waitForResources('redis');
-waitForResources('mongo');
-waitForResources('url');
-waitForResources('healthcheck');
+  const pendingResourcePromises = resourceNames.map(resourceName => awaitResource(resourceType, resourceName));
+  await Promise.all(pendingResourcePromises);
+}
+
+awaitResourceType('pg');
+awaitResourceType('mysql');
+awaitResourceType('rabbit');
+awaitResourceType('redis');
+awaitResourceType('mongo');
+awaitResourceType('url');
+awaitResourceType('healthcheck');
