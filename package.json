@@ -1,6 +1,6 @@
 {
   "name": "await-resource",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -20,7 +20,7 @@
   "dependencies": {
     "@emartech/delay-js": "1.0.0",
     "axios": "0.18.0",
-    "docker-cli-js": "2.5.2",
+    "cli-table-2-json": "1.0.12",
     "yargs": "13.2.2"
   },
   "devDependencies": {

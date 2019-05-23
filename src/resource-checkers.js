@@ -1,14 +1,27 @@
 'use strict';
 
 const axios = require('axios');
-const { Docker, Options } = require('docker-cli-js');
+const { exec } = require('child_process');
+const { cliTable2Json } = require('cli-table-2-json');
 
-const dockerOptions = new Options();
-const docker = new Docker(dockerOptions);
-const mysqlPassword = 'password';
+function executeScript(command) {
+  return new Promise((resolve, reject) => {
+    exec(command, (error, result, errorMessage) => {
+      if (error) {
+        return reject(errorMessage);
+      }
+      return resolve(result);
+    });
+  });
+}
+
+const mysqlPassword = process.env.MYSQL_ROOT_PASSWORD || 'password';
 
 const getContainerId = async name => {
-  const { containerList } = await docker.command('ps');
+  const dockerPsOutput = await executeScript('docker ps');
+  const rawContainerList = dockerPsOutput.split('\n').filter(Boolean);
+  const containerList = cliTable2Json(rawContainerList);
+
   const container = containerList.find(container => container.names === name);
   const containerId = container['container id'];
   return containerId;
@@ -17,8 +30,8 @@ const getContainerId = async name => {
 const isPostgresReady = async name => {
   try {
     const containerId = await getContainerId(name);
-    const result = await docker.command(`exec ${containerId} pg_isready`);
-    const isReady = result.raw.split('-')[1].trim() === 'accepting connections';
+    const result = await executeScript(`docker exec ${containerId} pg_isready`);
+    const isReady = result.split('-')[1].trim() === 'accepting connections';
     return isReady;
   } catch (error) {
     return false;
@@ -28,8 +41,8 @@ const isPostgresReady = async name => {
 const isMysqlReady = async name => {
   try {
     const containerId = await getContainerId(name);
-    const result = await docker.command(`exec ${containerId} mysqladmin status --password=${mysqlPassword}`);
-    const uptimeData = result.raw.split('  ')[0].split(' ');
+    const result = await executeScript(`docker exec ${containerId} mysqladmin status --password=${mysqlPassword}`);
+    const uptimeData = result.split('  ')[0].split(' ');
     const uptime = parseInt(uptimeData[1]);
     return uptimeData[0] === 'Uptime:' && uptime > 0;
   } catch (error) {
@@ -40,9 +53,9 @@ const isMysqlReady = async name => {
 const isRabbitReady = async name => {
   try {
     const containerId = await getContainerId(name);
-    const result = await docker.command(`exec ${containerId} rabbitmqctl status`);
-    const uptime = parseInt(result.raw.split('{uptime,')[1].split('}')[0], 10);
-    const listeners = result.raw.split('{listeners,[')[1].split(']')[0].split('},{').length;
+    const result = await executeScript(`docker exec ${containerId} rabbitmqctl status`);
+    const uptime = parseInt(result.split('{uptime,')[1].split('}')[0], 10);
+    const listeners = result.split('{listeners,[')[1].split(']')[0].split('},{').length;
     return uptime > 0 && listeners === 3;
   } catch (error) {
     return false;
@@ -52,8 +65,8 @@ const isRabbitReady = async name => {
 const isRedisReady = async name => {
   try {
     const containerId = await getContainerId(name);
-    const result = await docker.command(`exec ${containerId} redis-cli PING`);
-    return result.raw.trim() === 'PONG';
+    const result = await executeScript(`docker exec ${containerId} redis-cli PING`);
+    return result.trim() === 'PONG';
   } catch (error) {
     return false;
   }
@@ -62,8 +75,8 @@ const isRedisReady = async name => {
 const isMongoReady = async name => {
   try {
     const containerId = await getContainerId(name);
-    const result = await docker.command(`exec ${containerId} mongo`);
-    return result.raw.includes('MongoDB server version:');
+    const result = await executeScript(`docker exec ${containerId} mongo`);
+    return result.includes('MongoDB server version:');
   } catch (error) {
     return false;
   }
