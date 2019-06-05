@@ -1,6 +1,6 @@
 {
   "name": "await-resource",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -19,9 +19,9 @@
   "homepage": "https://github.com/cztamas/await-resource#readme",
   "dependencies": {
     "@emartech/delay-js": "1.0.0",
-    "axios": "0.18.0",
+    "axios": "0.19.0",
     "cli-table-2-json": "1.0.12",
-    "yargs": "13.2.2"
+    "yargs": "13.2.4"
   },
   "devDependencies": {
     "eslint": "5.16.0"
