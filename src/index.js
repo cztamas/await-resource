@@ -1,28 +1,13 @@
 'use strict';
 
 const Delay = require('@emartech/delay-js');
-const yargs = require('yargs');
 const resourceCheckers = require('./resource-checkers');
 
+const availableResourceTypes = Object.keys(resourceCheckers);
 const defaultTimeout = 120000;
 const defaultCheckInterval = 500;
 
-const args = yargs
-  .array('pg')
-  .array('mysql')
-  .array('rabbit')
-  .array('redis')
-  .array('mongo')
-  .array('url')
-  .array('healthcheck')
-  .number('timeout')
-  .number('interval')
-  .argv;
-
-const timeout = args.timeout || defaultTimeout;
-const checkInterval = args.interval || defaultCheckInterval;
-
-async function awaitResource(resourceType, resourceName) {
+async function awaitResource({ resourceType, resourceName, timeout, checkInterval }) {
   const checkResource = resourceCheckers[resourceType];
 
   if (!resourceName) {
@@ -44,20 +29,21 @@ async function awaitResource(resourceType, resourceName) {
   console.log(`${resourceName} is up`);
 }
 
-async function awaitResourceType(resourceType) {
-  const resourceNames = args[resourceType];
-  if (!resourceNames) {
-    return;
-  }
+module.exports = async function awaitResources(args) {
+  const timeout = args.timeout || defaultTimeout;
+  const checkInterval = args.interval || defaultCheckInterval;
 
-  const pendingResourcePromises = resourceNames.map(resourceName => awaitResource(resourceType, resourceName));
-  await Promise.all(pendingResourcePromises);
-}
+  const resourceTypePromises = availableResourceTypes.map(async resourceType => {
+    const resourceNames = args[resourceType];
+    if (!resourceNames) {
+      return;
+    }
 
-awaitResourceType('pg');
-awaitResourceType('mysql');
-awaitResourceType('rabbit');
-awaitResourceType('redis');
-awaitResourceType('mongo');
-awaitResourceType('url');
-awaitResourceType('healthcheck');
+    const resourcePromises = resourceNames.map(
+      resourceName => awaitResource({ resourceType, resourceName, timeout, checkInterval })
+    );
+    return Promise.all(resourcePromises);
+  });
+
+  return Promise.all(resourceTypePromises);
+};
