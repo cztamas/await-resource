@@ -82,6 +82,18 @@ const isMongoReady = async name => {
   }
 };
 
+const isFirestoreReady = async name => {
+  try {
+    const containerId = await getContainerId(name);
+    const customPort = await executeScript(`docker exec ${containerId} printenv PORT`);
+    const port = customPort || 8080;
+    const result = await executeScript(`docker exec ${containerId} curl 0.0.0.0:${port}`);
+    return result.trim() === 'Ok';
+  } catch (error) {
+    return false;
+  }
+};
+
 const checkUrl = async url => {
   try {
     await axios.get(url);
@@ -106,6 +118,7 @@ module.exports = {
   redis: isRedisReady,
   mongo: isMongoReady,
   mysql: isMysqlReady,
+  firestore: isFirestoreReady,
   url: checkUrl,
   healthcheck: checkHealthcheckRoute
 };

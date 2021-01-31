@@ -15,6 +15,8 @@ E.g. `await-resource --pg POSTGRES_CONTAINER_NAME_1  --pg POSTGRES_CONTAINER_NAM
 `await-resource --redis CONTAINER_NAME`
 ### MongoDB
 `await-resource --mongo CONTAINER_NAME`
+### Firestore emulator
+`await-resource --firestore CONTAINER_NAME`
 ### URLs
 `await-resource --url SOME_URL` polls the given URL until it returns a 2xx status code.
 

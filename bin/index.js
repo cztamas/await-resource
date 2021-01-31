@@ -10,6 +10,7 @@ const args = yargs
   .array('rabbit')
   .array('redis')
   .array('mongo')
+  .array('firestore')
   .array('url')
   .array('healthcheck')
   .number('timeout')
