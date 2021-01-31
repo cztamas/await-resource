@@ -1,6 +1,5 @@
 'use strict';
 
-const Delay = require('@emartech/delay-js');
 const resourceCheckers = require('./resource-checkers');
 
 const availableResourceTypes = Object.keys(resourceCheckers);
@@ -18,11 +17,11 @@ async function awaitResource({ resourceType, resourceName, timeout, checkInterva
   }
 
   let timeoutHandle = setTimeout(() => {
-    throw new Error('timeout reached');
+    throw new Error(`timeout reached waiting for ${resourceName}`);
   }, timeout);
   let isReady = await checkResource(resourceName);
   while (!isReady) {
-    await Delay.wait(checkInterval);
+    await wait(checkInterval);
     isReady = await checkResource(resourceName);
   }
   clearTimeout(timeoutHandle);
@@ -47,3 +46,7 @@ module.exports = async function awaitResources(args) {
 
   return Promise.all(resourceTypePromises);
 };
+
+function wait(intervalInMs) {
+  return new Promise(resolve => setTimeout(resolve, intervalInMs));
+}
